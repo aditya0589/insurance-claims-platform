@@ -19,38 +19,8 @@ This platform delivers an end-to-end solution:
 
 ## 2. End-to-End System Architecture
 
-```mermaid
-flowchart TD
-    subgraph Storage_Ingestion [Cloud Storage & Ingestion Layer]
-        S3["AWS S3 Bucket<br/>(s3://.../snowflake_project/raw/)"] -->|IAM Role & Storage Integration| Stage["Snowflake External Stage<br/>(@insurance_s3_stage)"]
-        Stage -->|COPY INTO Statement| RAW["INSURANCE_DB.RAW<br/>RAW_INSURANCE_CLAIMS"]
-    end
+<img width="1006" height="662" alt="Screenshot 2026-09-15 124646" src="https://github.com/user-attachments/assets/9631246a-f9c4-4594-96f2-0165970b7f70" />
 
-    subgraph Data_Engineering [Snowflake Data Transformation Layer]
-        RAW -->|Data Cleansing & Typing| STG["INSURANCE_DB.STAGING<br/>STG_INSURANCE_CLAIMS"]
-        STG -->|Constraint Checks| DQ["VW_DATA_QUALITY<br/>(Age, Premium, Claims)"]
-        STG -->|Analytical Modeling| FACT["INSURANCE_DB.ANALYTICS<br/>FACT_CLAIMS & Analytical Views"]
-        FACT -->|Feature Engineering| FMD["FRAUD_MODEL_DATASET<br/>(40 Features + Target)"]
-    end
-
-    subgraph MLOps_Pipeline [MLOps & Modeling Layer]
-        FMD -->|Snowflake Python Connector| ML_Data["ml/data.py & features.py<br/>(Validation & Leakage Drop)"]
-        ML_Data -->|Stratified Split 80/20| Split["Train / Holdout Test Sets"]
-        Split -->|ColumnTransformer| Prep["Imputer + OneHot + Scaler"]
-        Prep --> Models["Candidate Pipelines:<br/>1. Logistic Regression<br/>2. Random Forest Baseline<br/>3. Tuned Random Forest"]
-        Models --> MLflow["MLflow Tracking Server<br/>(Params, Metrics, Artifacts)"]
-        MLflow --> Eval["ml/evaluate.py<br/>(Threshold Optimization)"]
-        Eval --> Reg["MLflow Model Registry<br/>(Registered as @champion)"]
-        Reg --> Artifact["ml/artifacts/champion_model.joblib<br/>(Self-Contained Pipeline)"]
-    end
-
-    subgraph Serving_Layer [Streamlit Claims Intelligence Web App]
-        FACT -.->|Direct Query / Cached| UI_KPI["1. Executive Dashboard<br/>(VW_CLAIM_KPIS)"]
-        FACT -.->|Plotly Visualizations| UI_Analytics["2. Claims Analytics<br/>(State, Severity, Monthly Trends)"]
-        Artifact -->|Real-time Inference| UI_Score["3. Fraud Risk Scoring<br/>(Probability & Risk Tier)"]
-        MLflow -.->|Registry Audit & Metrics| UI_Monitor["4. Model Monitoring<br/>(Threshold Curves & Drift)"]
-    end
-```
 
 ---
 
